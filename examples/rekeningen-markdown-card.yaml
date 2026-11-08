@@ -1,0 +1,33 @@
+# Rekeningen als tabel: standaard Markdown-card, geen extra frontend-plugins nodig.
+
+type: markdown
+content: >
+  {%- macro eur(v) -%}€ {{ '{:,.2f}'.format(v | float(0)) |
+  replace(',', '#') | replace('.', ',') | replace('#', '.') }}{%-
+  endmacro -%}
+
+  {%- set ns = namespace(rows=[], som=0) -%}
+
+  {%- for e in integration_entities('firefly3') if
+  e.startswith('sensor.rekening_') and e.endswith('_saldo') and
+  states(e) not in ['unavailable', 'unknown'] -%}
+    {%- set iban = (state_attr(e, 'iban') or '') | replace(' ', '') -%}
+    {%- set ns.rows = ns.rows + [dict(naam=(device_attr(e, 'name') or e) | replace('Rekening ', ''), saldo=states(e) | float(0), iban=('•••• ' ~ iban[-4:]) if iban else '—')] -%}
+    {%- set ns.som = ns.som + states(e) | float(0) -%}
+  {%- endfor -%}
+
+  ## 🏦 Rekeningen
+
+
+  | Rekening | Saldo |
+
+  |:--|--:|
+
+  {% for r in ns.rows | sort(attribute='saldo', reverse=true) -%}
+
+  | {{ r.naam }}  | {% if r.saldo < 0 %}<font color="#e53935">{{
+  eur(r.saldo) }}</font>{% else %}{{ eur(r.saldo) }}{% endif %} |
+
+  {% endfor -%}
+
+  | **Totaal** | **{{ eur(ns.som) }}** |

@@ -1,0 +1,31 @@
+# Spaarpotjes van één groep, met het sjabloon uit spaarpotjes-template.yaml.
+# Kopieer dit blok per groep en pas alleen de variabelen aan.
+
+type: vertical-stack
+title: Sparen vaste lasten
+cards:
+  - type: custom:button-card
+    template: firefly_spaarpotjes
+    variables:
+      groep: Vaste lasten
+      niet_in_totaal:
+        - Boodschappen
+
+# Meer voorbeelden (elk als eigen card):
+#
+# - type: vertical-stack
+#   title: Totaal apart houden salaris
+#   cards:
+#     - type: custom:button-card
+#       template: firefly_spaarpotjes
+#       variables:
+#         groep: Totaal apart houden van salaris
+#         toon_kop: true
+#
+# - type: vertical-stack
+#   title: Jaarlijkse kosten 2026
+#   cards:
+#     - type: custom:button-card
+#       template: firefly_spaarpotjes
+#       variables:
+#         groep: Jaarlijkse kosten 2026

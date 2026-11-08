@@ -1,0 +1,88 @@
+# Rekeningen: alle Firefly III-rekeningen met saldo, totaal en aandeel per rekening.
+# Vereist: custom:button-card (HACS → Frontend).
+
+type: vertical-stack
+title: Rekeningen
+cards:
+  - type: custom:button-card
+    show_name: false
+    show_state: false
+    show_icon: false
+    show_label: false
+    tap_action:
+      action: none
+    triggers_update: all
+    custom_fields:
+      rek: |
+        [[[
+          return (function() {
+            var eur = function(v) {
+              return (parseFloat(v) || 0).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
+            };
+
+            var rows = [], som = 0;
+            Object.keys(states).forEach(function(e) {
+              if (!e.startsWith('sensor.rekening_') || !e.endsWith('_saldo')) return;
+              var reg = hass.entities && hass.entities[e];
+              if (!reg || reg.platform !== 'firefly3') return;
+              var s = states[e];
+              if (s.state === 'unavailable' || s.state === 'unknown') return;
+
+              var iban = (s.attributes.iban || '').replace(/\s/g, '');
+              var dev = reg.device_id && hass.devices ? hass.devices[reg.device_id] : null;
+              var naam = ((dev && (dev.name_by_user || dev.name)) || e).replace('Rekening ', '');
+              var saldo = parseFloat(s.state) || 0;
+
+              rows.push({ naam: naam, saldo: saldo, iban: iban ? '•••• ' + iban.slice(-4) : '' });
+              som += saldo;
+            });
+
+            if (!rows.length) {
+              return '<div style="color:#6C757D;font-size:13px;text-align:left;">Geen rekeningen gevonden</div>';
+            }
+            rows.sort(function(a, b) { return b.saldo - a.saldo; });
+
+            var positief = rows.reduce(function(n, r) { return n + Math.max(0, r.saldo); }, 0);
+
+            var h = '<div style="text-align:left;">';
+            h += '<div style="color:' + (som < 0 ? '#E53935' : '#4ECDC4') + ';font-size:18px;font-weight:700;margin-bottom:12px;">' + eur(som) + '</div>';
+
+            rows.forEach(function(r, i) {
+              var neg = r.saldo < 0;
+              var share = positief > 0 && !neg ? r.saldo / positief * 100 : 0;
+              var last = i === rows.length - 1;
+
+              h += '<div style="padding:7px 0;' + (last ? '' : 'border-bottom:1px solid #2B3035;') + '">';
+              h += '<div style="display:flex;align-items:center;gap:10px;">';
+              h += '<div style="width:30px;height:30px;flex-shrink:0;border-radius:50%;background:#2B3035;color:' + (neg ? '#E53935' : '#4ECDC4') + ';font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;">' + r.naam.charAt(0).toUpperCase() + '</div>';
+              h += '<div style="flex:1;min-width:0;">';
+              h += '<div style="color:#F8F9FA;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + r.naam + '</div>';
+              if (r.iban) {
+                h += '<div style="color:#6C757D;font-size:11px;letter-spacing:0.5px;">' + r.iban + '</div>';
+              }
+              h += '</div>';
+              h += '<div style="flex-shrink:0;text-align:right;color:' + (neg ? '#E53935' : '#F8F9FA') + ';font-size:13px;font-weight:600;white-space:nowrap;">' + eur(r.saldo) + '</div>';
+              h += '</div>';
+
+              if (!neg) {
+                h += '<div style="height:4px;background:#2B3035;border-radius:2px;overflow:hidden;margin:6px 0 0 40px;">';
+                h += '<div style="width:' + share + '%;height:100%;background:linear-gradient(90deg,#4ECDC4,#45B7AA);border-radius:2px;"></div>';
+                h += '</div>';
+              }
+              h += '</div>';
+            });
+
+            h += '</div>';
+            return h;
+          })();
+        ]]]
+    styles:
+      card:
+        - padding: 18px
+      grid:
+        - grid-template-areas: '"rek"'
+        - grid-template-columns: 1fr
+      custom_fields:
+        rek:
+          - white-space: normal
+          - text-align: left
