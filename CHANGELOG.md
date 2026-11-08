@@ -3,6 +3,10 @@
 Alle noemenswaardige wijzigingen worden hier bijgehouden.
 Versienummering volgt [Semantic Versioning](https://semver.org/lang/nl/): `MAJOR.MINOR.PATCH`.
 
+## [1.0.3] - 2026-11-08
+### Toegevoegd
+- Eigen icoon in `custom_components/firefly3/brand/` (Firefly III-logo); zichtbaar vanaf Home Assistant 2026.3.
+
 ## [1.0.2] - 2026-11-08
 ### Opgelost
 - `KeyError: 'access_token'` bij het opstarten van een bestaande installatie zonder (of met een anders genoemd) token.
