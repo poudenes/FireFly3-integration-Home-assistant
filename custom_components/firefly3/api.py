@@ -1,128 +1,82 @@
-"""Kleine async client voor de Firefly III REST API (alleen lezen)."""
+"""Kleine async client voor de Firefly III API."""
 
 from __future__ import annotations
 
 import asyncio
-from datetime import date, timedelta
+from datetime import date
 from typing import Any
 
 import aiohttp
 
-ACCOUNT_TYPES = ("asset", "liabilities")
-PAGE_LIMIT = 100
-TIMEOUT = 30
-
 
 class FireflyError(Exception):
-    """Algemene fout bij het praten met Firefly III."""
-
-
-class FireflyConnectionError(FireflyError):
-    """Firefly III is niet bereikbaar of gaf een onverwacht antwoord."""
+    """Basisfout."""
 
 
 class FireflyAuthError(FireflyError):
-    """Het access token is ongeldig of verlopen."""
+    """Token ongeldig of geen rechten."""
 
 
-def normalize_url(url: str) -> str:
-    """Maak van wat de gebruiker invult een nette basis-URL."""
-    url = url.strip().rstrip("/")
-    if not url.startswith(("http://", "https://")):
-        url = f"http://{url}"
-    for suffix in ("/api/v1", "/api"):
-        if url.endswith(suffix):
-            url = url[: -len(suffix)]
-    return url.rstrip("/")
+class FireflyConnectionError(FireflyError):
+    """Firefly III niet bereikbaar of onverwacht antwoord."""
 
 
-class FireflyClient:
-    """Leest rekeningen, spaarpotjes en abonnementen (bills) uit Firefly III."""
+class FireflyApi:
+    """Leest data uit Firefly III via /api/v1."""
 
     def __init__(self, session: aiohttp.ClientSession, url: str, token: str) -> None:
         self._session = session
-        self.base_url = normalize_url(url)
-        self._token = token.strip()
-
-    async def _get(self, path: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
-        headers = {
-            "Authorization": f"Bearer {self._token}",
+        self._base = url.rstrip("/")
+        self._headers = {
+            "Authorization": f"Bearer {token}",
             "Accept": "application/vnd.api+json",
         }
-        url = f"{self.base_url}/api/v1{path}"
+
+    async def _get(self, path: str, params: dict[str, Any] | None = None) -> dict:
         try:
-            async with asyncio.timeout(TIMEOUT):
+            async with asyncio.timeout(30):
                 async with self._session.get(
-                    url, headers=headers, params=params, allow_redirects=False
+                    f"{self._base}/api/v1{path}", headers=self._headers, params=params
                 ) as resp:
                     if resp.status in (401, 403):
                         raise FireflyAuthError(f"HTTP {resp.status}")
-                    if 300 <= resp.status < 400:
-                        # Firefly stuurt zonder geldige auth soms door naar /login
-                        raise FireflyAuthError(f"Redirect ({resp.status}) naar inlogpagina")
                     if resp.status >= 400:
                         raise FireflyConnectionError(f"HTTP {resp.status} op {path}")
-                    try:
-                        return await resp.json(content_type=None)
-                    except ValueError as err:
-                        raise FireflyConnectionError(
-                            "Antwoord is geen JSON; klopt de URL?"
-                        ) from err
-        except (aiohttp.ClientError, TimeoutError) as err:
+                    return await resp.json(content_type=None)
+        except FireflyError:
+            raise
+        except (aiohttp.ClientError, TimeoutError, ValueError) as err:
             raise FireflyConnectionError(str(err) or type(err).__name__) from err
 
     async def _get_all(self, path: str, params: dict[str, Any] | None = None) -> list[dict]:
-        """Haal alle pagina's van een lijst-endpoint op."""
+        """Haal alle pagina's op."""
         items: list[dict] = []
         page = 1
         while True:
-            query = {**(params or {}), "page": page, "limit": PAGE_LIMIT}
-            body = await self._get(path, query)
-            items.extend(body.get("data") or [])
-            pagination = (body.get("meta") or {}).get("pagination") or {}
-            total_pages = int(pagination.get("total_pages") or 1)
-            if page >= total_pages:
+            data = await self._get(path, {**(params or {}), "page": page, "limit": 100})
+            items.extend(data.get("data", []))
+            total = data.get("meta", {}).get("pagination", {}).get("total_pages", 1) or 1
+            if page >= total:
                 return items
             page += 1
 
-    @staticmethod
-    def _by_id(items: list[dict], **extra: Any) -> dict[str, dict[str, Any]]:
-        return {
-            str(item["id"]): {**(item.get("attributes") or {}), **extra}
-            for item in items
-            if "id" in item
-        }
+    async def about(self) -> dict:
+        return (await self._get("/about")).get("data", {})
 
-    async def about(self) -> dict[str, Any]:
-        """Controleer de verbinding en het token. Geeft versie + gebruiker terug."""
-        about = await self._get("/about")
-        user = await self._get("/about/user")
-        return {
-            "version": (about.get("data") or {}).get("version"),
-            "api_version": (about.get("data") or {}).get("api_version"),
-            "email": ((user.get("data") or {}).get("attributes") or {}).get("email"),
-        }
+    async def asset_accounts(self) -> list[dict]:
+        items = await self._get_all("/accounts", {"type": "asset"})
+        # extra vangnet: alleen echte betaal-/spaarrekeningen, geen
+        # winkels/begunstigden (expense/revenue-rekeningen)
+        return [i for i in items if i.get("attributes", {}).get("type") == "asset"]
 
-    async def accounts(self) -> dict[str, dict[str, Any]]:
-        """Betaal-/spaarrekeningen (asset) en schulden (liabilities)."""
-        result: dict[str, dict[str, Any]] = {}
-        for acc_type in ACCOUNT_TYPES:
-            items = await self._get_all("/accounts", {"type": acc_type})
-            result.update(self._by_id(items))
-        return result
+    async def piggy_banks(self) -> list[dict]:
+        return await self._get_all("/piggy-banks")
 
-    async def piggy_banks(self) -> dict[str, dict[str, Any]]:
-        """Alle spaarpotjes."""
-        return self._by_id(await self._get_all("/piggy-banks"))
+    async def bills(self, start: date, end: date) -> list[dict]:
+        """Abonnementen (in de API nog 'bills') met pay_dates/paid_dates voor de periode."""
+        return await self._get_all(
+            "/bills", {"start": start.isoformat(), "end": end.isoformat()}
+        )
 
-    async def bills(self) -> dict[str, dict[str, Any]]:
-        """Alle abonnementen (in de API heten ze 'bills').
-
-        Met start/end berekent Firefly de volgende verwachte betaling.
-        """
-        today = date.today()
-        params = {
-            "start": today.isoformat(),
-            "end": (today + timedelta(days=366)).isoformat(),
-        }
-        return self._by_id(await self._get_all("/bills", params))
+    async def transaction_group(self, group_id: str) -> dict:
+        return (await self._get(f"/transactions/{group_id}")).get("data", {})

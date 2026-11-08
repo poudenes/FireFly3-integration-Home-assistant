@@ -1,44 +1,18 @@
-"""Constants for the Firefly III (selectie) integration."""
+"""Constanten voor Firefly III Overzicht."""
 
-from __future__ import annotations
+DOMAIN = "firefly3"
 
-from typing import Final
+CONF_SCAN_INTERVAL = "scan_interval"
+DEFAULT_SCAN_INTERVAL = 15  # minuten
+DEFAULT_URL = "https://ff.hassio.nl"
 
-DOMAIN: Final = "firefly3"
-MANUFACTURER: Final = "Firefly III"
+MANUFACTURER = "Firefly III"
 
-CONF_ACCOUNTS: Final = "accounts"
-CONF_PIGGY_BANKS: Final = "piggy_banks"
-CONF_BILLS: Final = "bills"
-CONF_SCAN_INTERVAL: Final = "scan_interval"
+SUBSCRIPTION_STATES = ["betaald", "open", "te_laat", "niet_deze_maand", "inactief"]
 
-SELECTION_KEYS: Final = (CONF_ACCOUNTS, CONF_PIGGY_BANKS, CONF_BILLS)
+CONF_ACCOUNTS = "accounts"
+CONF_PIGGY_BANKS = "piggy_banks"
+CONF_BILLS = "bills"
 
-DEFAULT_SCAN_INTERVAL: Final = 15  # minuten
-
-# Sleutels waaronder oudere installaties het token mogelijk hebben opgeslagen.
-LEGACY_TOKEN_KEYS: Final = ("api_token", "token", "api_key", "personal_access_token")
-
-# Interne "soorten" items; worden gebruikt in unique_id's en device identifiers.
-KIND_ACCOUNT: Final = "account"
-KIND_PIGGY: Final = "piggy"
-KIND_BILL: Final = "bill"
-
-KIND_BY_CONF: Final = {
-    CONF_ACCOUNTS: KIND_ACCOUNT,
-    CONF_PIGGY_BANKS: KIND_PIGGY,
-    CONF_BILLS: KIND_BILL,
-}
-
-# Pad in de Firefly III web-UI om een item te openen (configuration_url).
-WEB_PATH: Final = {
-    KIND_ACCOUNT: "accounts/show",
-    KIND_PIGGY: "piggy-banks/show",
-    KIND_BILL: "bills/show",
-}
-
-MODEL: Final = {
-    KIND_ACCOUNT: "Rekening",
-    KIND_PIGGY: "Spaarpotje",
-    KIND_BILL: "Abonnement",
-}
+# Andere sleutels waaronder het token kan staan (o.a. door versie 1.0.x).
+LEGACY_TOKEN_KEYS = ("access_token", "token", "api_key", "personal_access_token")
