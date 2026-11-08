@@ -1,12 +1,13 @@
 {
   "domain": "firefly3",
   "name": "Firefly III (rekeningen, spaarpotjes & abonnementen)",
-  "codeowners": [],
+  "codeowners": ["@poudenes"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://docs.firefly-iii.org/references/firefly-iii/api/",
+  "documentation": "https://github.com/poudenes/FireFly3-integration-Home-assistant",
   "integration_type": "service",
   "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/poudenes/FireFly3-integration-Home-assistant/issues",
   "requirements": [],
   "version": "1.0.0"
 }
