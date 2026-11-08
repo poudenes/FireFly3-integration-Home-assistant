@@ -1,0 +1,59 @@
+name: Release
+
+# Verhoog "version" in custom_components/firefly3/manifest.json en push naar main.
+# Deze workflow maakt dan automatisch tag vX.Y.Z + GitHub-release met firefly3.zip,
+# waarna HACS de update aanbiedt.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - custom_components/firefly3/manifest.json
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Versie uit manifest lezen
+        id: version
+        run: |
+          VERSION=$(jq -r .version custom_components/firefly3/manifest.json)
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-]?[A-Za-z0-9.]+)?$ ]]; then
+            echo "::error::Ongeldige versie in manifest.json: $VERSION"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Zip bouwen
+        if: steps.version.outputs.exists == 'false'
+        run: |
+          cd custom_components/firefly3
+          zip -r "$GITHUB_WORKSPACE/firefly3.zip" . -x "__pycache__/*" "*.pyc" ".DS_Store"
+
+      - name: Release aanmaken
+        if: steps.version.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          PRERELEASE=""
+          if [[ "$VERSION" =~ (a|b|rc|beta|alpha|dev) ]]; then PRERELEASE="--prerelease"; fi
+          gh release create "$TAG" firefly3.zip \
+            --target "$GITHUB_SHA" \
+            --title "$TAG" \
+            --generate-notes $PRERELEASE
