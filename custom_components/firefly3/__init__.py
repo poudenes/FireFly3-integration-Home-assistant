@@ -1,88 +1,63 @@
-"""Firefly III integratie: rekeningen, spaarpotjes en abonnementen."""
+"""Firefly III Overzicht: rekeningen, spaarpotjes en abonnementen als sensoren."""
 
 from __future__ import annotations
 
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_ACCESS_TOKEN, CONF_URL, CONF_VERIFY_SSL, Platform
+from homeassistant.const import CONF_API_TOKEN, CONF_URL, CONF_VERIFY_SSL, Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
-from homeassistant.helpers import device_registry as dr, entity_registry as er
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api import FireflyClient
-from .const import DOMAIN, KIND_BY_CONF, LEGACY_TOKEN_KEYS, SELECTION_KEYS
-from .coordinator import FireflyCoordinator
+from .api import FireflyApi
+from .const import CONF_ACCOUNTS, CONF_BILLS, CONF_PIGGY_BANKS, DOMAIN, LEGACY_TOKEN_KEYS
+from .coordinator import FireflyConfigEntry, FireflyCoordinator
 
-PLATFORMS: list[Platform] = [Platform.SENSOR]
-
-type FireflyConfigEntry = ConfigEntry[FireflyCoordinator]
+PLATFORMS = [Platform.SENSOR]
 
 
-def selected_device_keys(entry: ConfigEntry) -> set[str]:
-    """Device-sleutels van alle items die de gebruiker heeft aangevinkt."""
-    return {
-        f"{entry.entry_id}_{KIND_BY_CONF[conf]}_{item_id}"
-        for conf in SELECTION_KEYS
-        for item_id in entry.options.get(conf, [])
-    }
-
-
-async def async_setup_entry(hass: HomeAssistant, entry: FireflyConfigEntry) -> bool:
-    """Zet de integratie op vanuit een config entry."""
-    token = _async_ensure_token(hass, entry)
-    if not token:
-        # Geen token opgeslagen: laat Home Assistant om een (nieuw) token vragen.
-        raise ConfigEntryAuthFailed("Er is geen token opgeslagen voor Firefly III")
-
-    session = async_get_clientsession(hass, verify_ssl=entry.data.get(CONF_VERIFY_SSL, True))
-    client = FireflyClient(session, entry.data[CONF_URL], token)
-    coordinator = FireflyCoordinator(hass, entry, client)
-    await coordinator.async_config_entry_first_refresh()
-    entry.runtime_data = coordinator
-
-    _async_remove_deselected(hass, entry)
-
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
-    return True
-
-
-async def async_unload_entry(hass: HomeAssistant, entry: FireflyConfigEntry) -> bool:
-    """Ontlaad de integratie."""
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-
-
-async def _async_update_listener(hass: HomeAssistant, entry: FireflyConfigEntry) -> None:
-    """Herlaad na het wijzigen van de opties (selectie / interval)."""
-    await hass.config_entries.async_reload(entry.entry_id)
+def _remove_unselected_devices(hass: HomeAssistant, entry: FireflyConfigEntry) -> None:
+    """Verwijder apparaten (en hun sensoren) die niet meer geselecteerd zijn."""
+    eid = entry.entry_id
+    wanted = {eid}
+    for kind in (CONF_ACCOUNTS, CONF_PIGGY_BANKS, CONF_BILLS):
+        wanted |= {f"{eid}_{kind}_{i}" for i in entry.options.get(kind, [])}
+    dev_reg = dr.async_get(hass)
+    for device in dr.async_entries_for_config_entry(dev_reg, eid):
+        if not any(d == DOMAIN and i in wanted for d, i in device.identifiers):
+            dev_reg.async_update_device(device.id, remove_config_entry_id=eid)
 
 
 @callback
-def _async_ensure_token(hass: HomeAssistant, entry: ConfigEntry) -> str | None:
-    """Geef het token terug; zet een token onder een oude sleutel om naar access_token."""
-    if token := entry.data.get(CONF_ACCESS_TOKEN):
+def _ensure_token(hass: HomeAssistant, entry: FireflyConfigEntry) -> str | None:
+    """Geef het token; zet een token onder een andere sleutel om naar api_token."""
+    if token := entry.data.get(CONF_API_TOKEN):
         return token
     for key in LEGACY_TOKEN_KEYS:
         if token := entry.data.get(key):
             data = {k: v for k, v in entry.data.items() if k not in LEGACY_TOKEN_KEYS}
-            data[CONF_ACCESS_TOKEN] = token
+            data[CONF_API_TOKEN] = token
             hass.config_entries.async_update_entry(entry, data=data)
             return token
     return None
 
 
-@callback
-def _async_remove_deselected(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Verwijder entiteiten en apparaten van items die niet meer geselecteerd zijn."""
-    keep = selected_device_keys(entry)
+async def async_setup_entry(hass: HomeAssistant, entry: FireflyConfigEntry) -> bool:
+    if not (token := _ensure_token(hass, entry)):
+        raise ConfigEntryAuthFailed("Er is geen token opgeslagen voor Firefly III")
+    session = async_get_clientsession(hass, verify_ssl=entry.data.get(CONF_VERIFY_SSL, True))
+    api = FireflyApi(session, entry.data[CONF_URL], token)
+    coordinator = FireflyCoordinator(hass, entry, api)
+    await coordinator.async_config_entry_first_refresh()
+    entry.runtime_data = coordinator
+    _remove_unselected_devices(hass, entry)
+    entry.async_on_unload(entry.add_update_listener(_async_reload))
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    return True
 
-    ent_reg = er.async_get(hass)
-    for ent in er.async_entries_for_config_entry(ent_reg, entry.entry_id):
-        if not any(ent.unique_id.startswith(f"{key}_") for key in keep):
-            ent_reg.async_remove(ent.entity_id)
 
-    dev_reg = dr.async_get(hass)
-    for device in dr.async_entries_for_config_entry(dev_reg, entry.entry_id):
-        idents = {ident for domain, ident in device.identifiers if domain == DOMAIN}
-        if not idents & keep:
-            dev_reg.async_update_device(device.id, remove_config_entry_id=entry.entry_id)
+async def _async_reload(hass: HomeAssistant, entry: FireflyConfigEntry) -> None:
+    await hass.config_entries.async_reload(entry.entry_id)
+
+
+async def async_unload_entry(hass: HomeAssistant, entry: FireflyConfigEntry) -> bool:
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)

@@ -39,11 +39,12 @@ Kopieer het token meteen; Firefly laat het maar één keer zien.
 - Is het token verlopen, dan vraagt Home Assistant zelf om een nieuw token.
 
 ## Sensoren
-| Soort | Sensoren |
-|---|---|
-| Rekening | Saldo (attributen: IBAN, rol, type, …) |
-| Spaarpotje | Huidig bedrag, Doelbedrag, Nog te sparen, Voortgang (%), Streefdatum |
-| Abonnement | Bedrag (gemiddelde van min/max), Volgende betaling (datum) |
+| Apparaat | Sensoren | Voorbeeld entity_id |
+|---|---|---|
+| Firefly III | Totaal saldo | `sensor.firefly_iii_totaal_saldo` |
+| Rekening *naam* | Saldo (attributen: `iban`, `rol`, …) | `sensor.rekening_<naam>_saldo` |
+| Spaarpot *naam* | Gespaard (attributen: `doel`, `voortgang`, `groep`, …), Doel, Nog te sparen, Voortgang | `sensor.spaarpot_<naam>_gespaard` |
+| Abonnement *naam* | Status (`betaald`, `open`, `te_laat`, `niet_deze_maand`, `inactief`), Verwachte datum, Betaald op, Betaald bedrag, Verwacht bedrag | `sensor.abonnement_<naam>_status` |
 
 Domein: `firefly3` – bewust anders dan de ingebouwde `firefly_iii`-integratie van Home Assistant, zodat ze niet botsen.
 
