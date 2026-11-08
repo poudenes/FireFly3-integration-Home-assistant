@@ -78,7 +78,8 @@
     },
     "abort": {
       "cannot_connect": "Cannot reach Firefly III. Check the URL and that the server is running.",
-      "invalid_auth": "The token is invalid or expired."
+      "invalid_auth": "The token is invalid or expired.",
+      "missing_token": "No token is stored. Use **⋮ → Reconfigure** or the repair notification to enter a new token."
     }
   },
   "entity": {

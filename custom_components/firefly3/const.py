@@ -16,6 +16,9 @@ SELECTION_KEYS: Final = (CONF_ACCOUNTS, CONF_PIGGY_BANKS, CONF_BILLS)
 
 DEFAULT_SCAN_INTERVAL: Final = 15  # minuten
 
+# Sleutels waaronder oudere installaties het token mogelijk hebben opgeslagen.
+LEGACY_TOKEN_KEYS: Final = ("api_token", "token", "api_key", "personal_access_token")
+
 # Interne "soorten" items; worden gebruikt in unique_id's en device identifiers.
 KIND_ACCOUNT: Final = "account"
 KIND_PIGGY: Final = "piggy"

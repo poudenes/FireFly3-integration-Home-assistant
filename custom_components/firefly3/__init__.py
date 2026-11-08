@@ -5,11 +5,12 @@ from __future__ import annotations
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ACCESS_TOKEN, CONF_URL, CONF_VERIFY_SSL, Platform
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import FireflyClient
-from .const import DOMAIN, KIND_BY_CONF, SELECTION_KEYS
+from .const import DOMAIN, KIND_BY_CONF, LEGACY_TOKEN_KEYS, SELECTION_KEYS
 from .coordinator import FireflyCoordinator
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
@@ -28,8 +29,13 @@ def selected_device_keys(entry: ConfigEntry) -> set[str]:
 
 async def async_setup_entry(hass: HomeAssistant, entry: FireflyConfigEntry) -> bool:
     """Zet de integratie op vanuit een config entry."""
+    token = _async_ensure_token(hass, entry)
+    if not token:
+        # Geen token opgeslagen: laat Home Assistant om een (nieuw) token vragen.
+        raise ConfigEntryAuthFailed("Er is geen token opgeslagen voor Firefly III")
+
     session = async_get_clientsession(hass, verify_ssl=entry.data.get(CONF_VERIFY_SSL, True))
-    client = FireflyClient(session, entry.data[CONF_URL], entry.data[CONF_ACCESS_TOKEN])
+    client = FireflyClient(session, entry.data[CONF_URL], token)
     coordinator = FireflyCoordinator(hass, entry, client)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
@@ -49,6 +55,20 @@ async def async_unload_entry(hass: HomeAssistant, entry: FireflyConfigEntry) -> 
 async def _async_update_listener(hass: HomeAssistant, entry: FireflyConfigEntry) -> None:
     """Herlaad na het wijzigen van de opties (selectie / interval)."""
     await hass.config_entries.async_reload(entry.entry_id)
+
+
+@callback
+def _async_ensure_token(hass: HomeAssistant, entry: ConfigEntry) -> str | None:
+    """Geef het token terug; zet een token onder een oude sleutel om naar access_token."""
+    if token := entry.data.get(CONF_ACCESS_TOKEN):
+        return token
+    for key in LEGACY_TOKEN_KEYS:
+        if token := entry.data.get(key):
+            data = {k: v for k, v in entry.data.items() if k not in LEGACY_TOKEN_KEYS}
+            data[CONF_ACCESS_TOKEN] = token
+            hass.config_entries.async_update_entry(entry, data=data)
+            return token
+    return None
 
 
 @callback

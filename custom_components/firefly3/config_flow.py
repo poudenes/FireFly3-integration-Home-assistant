@@ -315,11 +315,13 @@ class FireflyConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None:
             url = normalize_url(user_input[CONF_URL])
-            token = (user_input.get(CONF_ACCESS_TOKEN) or "").strip() or entry.data[
-                CONF_ACCESS_TOKEN
-            ]
+            token = (user_input.get(CONF_ACCESS_TOKEN) or "").strip() or entry.data.get(
+                CONF_ACCESS_TOKEN, ""
+            )
             verify_ssl = user_input.get(CONF_VERIFY_SSL, True)
             try:
+                if not token:
+                    raise FireflyAuthError("Geen token opgegeven")
                 await _connect(self.hass, url, token, verify_ssl)
             except FireflyAuthError:
                 errors["base"] = "invalid_auth"
@@ -360,6 +362,8 @@ class FireflyOptionsFlow(OptionsFlow):
             )
             return self.async_create_entry(data=options)
 
+        if not entry.data.get(CONF_ACCESS_TOKEN):
+            return self.async_abort(reason="missing_token")
         try:
             client, _ = await _connect(
                 self.hass, entry.data[CONF_URL], entry.data[CONF_ACCESS_TOKEN],

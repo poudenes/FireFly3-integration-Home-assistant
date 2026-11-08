@@ -78,7 +78,8 @@
     },
     "abort": {
       "cannot_connect": "Kan Firefly III niet bereiken. Controleer de URL en of de server draait.",
-      "invalid_auth": "Het token is ongeldig of verlopen."
+      "invalid_auth": "Het token is ongeldig of verlopen.",
+      "missing_token": "Er is geen token opgeslagen. Gebruik **⋮ → Opnieuw configureren** of de reparatiemelding om een nieuw token in te voeren."
     }
   },
   "entity": {
