@@ -10,7 +10,7 @@
           "verify_ssl": "Verify SSL certificate"
         },
         "data_description": {
-          "url": "For example http://192.168.1.10:8080 or https://firefly.example.com (without /api).",
+          "url": "For example {example_local} or {example_domain} (without /api).",
           "access_token": "The long token Firefly III shows once after creating it.",
           "verify_ssl": "Disable for a self-signed certificate."
         }

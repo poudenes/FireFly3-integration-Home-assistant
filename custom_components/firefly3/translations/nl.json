@@ -10,7 +10,7 @@
           "verify_ssl": "SSL-certificaat controleren"
         },
         "data_description": {
-          "url": "Bijvoorbeeld http://192.168.1.10:8080 of https://firefly.mijndomein.nl (zonder /api).",
+          "url": "Bijvoorbeeld {example_local} of {example_domain} (zonder /api).",
           "access_token": "Het lange token dat Firefly III één keer laat zien na het aanmaken.",
           "verify_ssl": "Zet uit bij een zelfondertekend certificaat."
         }
