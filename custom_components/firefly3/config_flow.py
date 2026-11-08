@@ -249,6 +249,10 @@ class FireflyConfigFlow(ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=self.add_suggested_values_to_schema(schema, user_input or {}),
             errors=errors,
+            description_placeholders={
+                "example_local": "http://192.168.1.10:8080",
+                "example_domain": "https://firefly.example.com",
+            },
         )
 
     # ---------- Stap 2: kiezen wat je wilt zien ----------
