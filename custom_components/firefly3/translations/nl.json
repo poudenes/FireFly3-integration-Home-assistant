@@ -1,0 +1,112 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Verbinden met Firefly III",
+        "description": "Vul het adres van je Firefly III-server in en een Personal Access Token. Dat token maak je in Firefly III via **Opties → Profiel → OAuth → Personal Access Tokens → Nieuw token aanmaken**.",
+        "data": {
+          "url": "URL van Firefly III",
+          "access_token": "Personal Access Token (OAuth)",
+          "verify_ssl": "SSL-certificaat controleren"
+        },
+        "data_description": {
+          "url": "Bijvoorbeeld http://192.168.1.10:8080 of https://firefly.mijndomein.nl (zonder /api).",
+          "access_token": "Het lange token dat Firefly III één keer laat zien na het aanmaken.",
+          "verify_ssl": "Zet uit bij een zelfondertekend certificaat."
+        }
+      },
+      "select": {
+        "title": "Kies wat je in Home Assistant wilt zien",
+        "description": "Gevonden: {accounts} rekeningen, {piggy_banks} spaarpotjes en {bills} abonnementen. Vink aan wat je wilt toevoegen. Je kunt dit later altijd aanpassen via **Configureren** bij de integratie.",
+        "data": {
+          "accounts": "Rekeningen",
+          "piggy_banks": "Spaarpotjes",
+          "bills": "Abonnementen"
+        },
+        "data_description": {
+          "accounts": "Per rekening komt er een saldo-sensor.",
+          "piggy_banks": "Per spaarpotje: huidig bedrag, doel, nog te sparen, percentage en streefdatum.",
+          "bills": "Per abonnement: (gemiddeld) bedrag en volgende verwachte betaaldatum."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Nieuw token nodig",
+        "description": "Firefly III op {url} accepteert het opgeslagen token niet meer. Maak een nieuw Personal Access Token aan en plak het hier.",
+        "data": {
+          "access_token": "Personal Access Token (OAuth)"
+        }
+      },
+      "reconfigure": {
+        "title": "Verbinding wijzigen",
+        "description": "Wijzig de URL, het token of de SSL-instelling.",
+        "data": {
+          "url": "URL van Firefly III",
+          "access_token": "Personal Access Token (OAuth)",
+          "verify_ssl": "SSL-certificaat controleren"
+        },
+        "data_description": {
+          "access_token": "Laat leeg om het huidige token te houden."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Kan Firefly III niet bereiken. Controleer de URL en of de server draait.",
+      "invalid_auth": "Het token is ongeldig of verlopen.",
+      "unknown": "Onverwachte fout, zie het logboek van Home Assistant."
+    },
+    "abort": {
+      "already_configured": "Deze Firefly III-server is al toegevoegd.",
+      "reauth_successful": "Het nieuwe token is opgeslagen.",
+      "reconfigure_successful": "De verbinding is bijgewerkt."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Selectie aanpassen",
+        "description": "Gevonden: {accounts} rekeningen, {piggy_banks} spaarpotjes en {bills} abonnementen. Vink aan wat je wilt toevoegen. Je kunt dit later altijd aanpassen via **Configureren** bij de integratie.",
+        "data": {
+          "accounts": "Rekeningen",
+          "piggy_banks": "Spaarpotjes",
+          "bills": "Abonnementen",
+          "scan_interval": "Update-interval"
+        },
+        "data_description": {
+          "scan_interval": "Hoe vaak (in minuten) Firefly III wordt uitgelezen."
+        }
+      }
+    },
+    "abort": {
+      "cannot_connect": "Kan Firefly III niet bereiken. Controleer de URL en of de server draait.",
+      "invalid_auth": "Het token is ongeldig of verlopen."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "balance": {
+        "name": "Saldo"
+      },
+      "current_amount": {
+        "name": "Huidig bedrag"
+      },
+      "target_amount": {
+        "name": "Doelbedrag"
+      },
+      "left_to_save": {
+        "name": "Nog te sparen"
+      },
+      "percentage": {
+        "name": "Voortgang"
+      },
+      "target_date": {
+        "name": "Streefdatum"
+      },
+      "bill_amount": {
+        "name": "Bedrag"
+      },
+      "next_due": {
+        "name": "Volgende betaling"
+      }
+    }
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Firefly III",
+        "description": "Enter the address of your Firefly III server and a Personal Access Token. Create the token in Firefly III under **Options → Profile → OAuth → Personal Access Tokens → Create new token**.",
+        "data": {
+          "url": "Firefly III URL",
+          "access_token": "Personal Access Token (OAuth)",
+          "verify_ssl": "Verify SSL certificate"
+        },
+        "data_description": {
+          "url": "For example http://192.168.1.10:8080 or https://firefly.example.com (without /api).",
+          "access_token": "The long token Firefly III shows once after creating it.",
+          "verify_ssl": "Disable for a self-signed certificate."
+        }
+      },
+      "select": {
+        "title": "Choose what to show in Home Assistant",
+        "description": "Found: {accounts} accounts, {piggy_banks} piggy banks and {bills} subscriptions. Tick what you want to add. You can always change this later via **Configure** on the integration.",
+        "data": {
+          "accounts": "Accounts",
+          "piggy_banks": "Piggy banks",
+          "bills": "Subscriptions"
+        },
+        "data_description": {
+          "accounts": "One balance sensor per account.",
+          "piggy_banks": "Per piggy bank: current amount, target, left to save, percentage and target date.",
+          "bills": "Per subscription: (average) amount and next expected payment date."
+        }
+      },
+      "reauth_confirm": {
+        "title": "New token required",
+        "description": "Firefly III at {url} no longer accepts the stored token. Create a new Personal Access Token and paste it here.",
+        "data": {
+          "access_token": "Personal Access Token (OAuth)"
+        }
+      },
+      "reconfigure": {
+        "title": "Change connection",
+        "description": "Change the URL, token or SSL setting.",
+        "data": {
+          "url": "Firefly III URL",
+          "access_token": "Personal Access Token (OAuth)",
+          "verify_ssl": "Verify SSL certificate"
+        },
+        "data_description": {
+          "access_token": "Leave empty to keep the current token."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot reach Firefly III. Check the URL and that the server is running.",
+      "invalid_auth": "The token is invalid or expired.",
+      "unknown": "Unexpected error, check the Home Assistant log."
+    },
+    "abort": {
+      "already_configured": "This Firefly III server is already configured.",
+      "reauth_successful": "The new token has been saved.",
+      "reconfigure_successful": "The connection has been updated."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Change selection",
+        "description": "Found: {accounts} accounts, {piggy_banks} piggy banks and {bills} subscriptions. Tick what you want to add. You can always change this later via **Configure** on the integration.",
+        "data": {
+          "accounts": "Accounts",
+          "piggy_banks": "Piggy banks",
+          "bills": "Subscriptions",
+          "scan_interval": "Update interval"
+        },
+        "data_description": {
+          "scan_interval": "How often (in minutes) Firefly III is polled."
+        }
+      }
+    },
+    "abort": {
+      "cannot_connect": "Cannot reach Firefly III. Check the URL and that the server is running.",
+      "invalid_auth": "The token is invalid or expired."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "balance": {
+        "name": "Balance"
+      },
+      "current_amount": {
+        "name": "Current amount"
+      },
+      "target_amount": {
+        "name": "Target amount"
+      },
+      "left_to_save": {
+        "name": "Left to save"
+      },
+      "percentage": {
+        "name": "Progress"
+      },
+      "target_date": {
+        "name": "Target date"
+      },
+      "bill_amount": {
+        "name": "Amount"
+      },
+      "next_due": {
+        "name": "Next payment"
+      }
+    }
+  }
+}

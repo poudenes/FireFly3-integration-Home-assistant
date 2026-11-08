@@ -1,0 +1,12 @@
+{
+  "domain": "firefly3",
+  "name": "Firefly III (rekeningen, spaarpotjes & abonnementen)",
+  "codeowners": [],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://docs.firefly-iii.org/references/firefly-iii/api/",
+  "integration_type": "service",
+  "iot_class": "local_polling",
+  "requirements": [],
+  "version": "1.0.0"
+}
