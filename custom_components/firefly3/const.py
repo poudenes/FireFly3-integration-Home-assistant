@@ -4,7 +4,6 @@ DOMAIN = "firefly3"
 
 CONF_SCAN_INTERVAL = "scan_interval"
 DEFAULT_SCAN_INTERVAL = 15  # minuten
-DEFAULT_URL = "https://ff.hassio.nl"
 
 MANUFACTURER = "Firefly III"
 

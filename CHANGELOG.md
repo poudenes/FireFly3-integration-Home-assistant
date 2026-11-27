@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 Versions follow [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`.
 
+## [1.1.1] - 2026-11-27
+### Changed
+- The URL field in the setup screen is no longer pre-filled with the author's server; it now shows example URLs as a hint.
+  Existing installations are not affected.
+
 ## [1.1.0] - 2026-11-08
 ### Changed
 - Restored the integration code that was in use before the HACS releases (0.2.2, "Firefly III Overzicht").

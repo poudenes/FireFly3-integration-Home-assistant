@@ -32,7 +32,6 @@ from .const import (
     CONF_PIGGY_BANKS,
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
-    DEFAULT_URL,
     DOMAIN,
 )
 from .coordinator import current_period
@@ -44,7 +43,7 @@ TOKEN_SELECTOR = TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD)
 
 USER_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_URL, default=DEFAULT_URL): TextSelector(
+        vol.Required(CONF_URL): TextSelector(
             TextSelectorConfig(type=TextSelectorType.URL)
         ),
         vol.Required(CONF_API_TOKEN): TOKEN_SELECTOR,
@@ -137,6 +136,10 @@ class FireflyConfigFlow(ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=self.add_suggested_values_to_schema(USER_SCHEMA, user_input),
             errors=errors,
+            description_placeholders={
+                "example_local": "http://192.168.1.10:8080",
+                "example_domain": "https://firefly.example.com",
+            },
         )
 
     async def async_step_select(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
