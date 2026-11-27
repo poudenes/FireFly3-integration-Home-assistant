@@ -1,5 +1,5 @@
-# Rekeningen: alle Firefly III-rekeningen met saldo, totaal en aandeel per rekening.
-# Vereist: custom:button-card (HACS → Frontend).
+# Accounts: every Firefly III account with its balance, the total and each account's share.
+# Requires: custom:button-card (HACS → Frontend).
 
 type: vertical-stack
 title: Rekeningen

@@ -1,5 +1,5 @@
-# Maandelijkse uitgaven: abonnementen van deze maand (betaald / open / te laat) en later.
-# Vereist: custom:button-card (HACS → Frontend).
+# Monthly subscriptions: this month's subscriptions (paid / open / overdue) and later ones.
+# Requires: custom:button-card (HACS → Frontend).
 
 type: vertical-stack
 title: Maandelijkse uitgaven

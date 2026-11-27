@@ -1,21 +1,21 @@
 ---
-name: Bug melden
-about: Iets werkt niet zoals verwacht
+name: Bug report
+about: Something doesn't work as expected
 labels: bug
 ---
 
-**Wat gaat er mis?**
+**What goes wrong?**
 
-**Hoe reproduceer je het?**
+**How can it be reproduced?**
 1.
 2.
 
-**Versies**
-- Integratie (HACS):
+**Versions**
+- Integration (HACS):
 - Home Assistant:
 - Firefly III:
 
 **Logs**
-Instellingen → Systeem → Logboeken, filter op `firefly3`:
+Settings → System → Logs, filtered on `firefly3`:
 ```
 ```

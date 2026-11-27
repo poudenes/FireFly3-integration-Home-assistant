@@ -1,15 +1,15 @@
-# Sjabloon voor custom:button-card: spaarpotjes van één Firefly III-groep.
+# button-card template: the piggy banks of one Firefly III group.
 #
-# Zet dit blok bovenaan de ruwe dashboardconfiguratie
-# (dashboard → ✏️ → ⋮ → Ruwe configuratie-editor), op hetzelfde niveau als `views:`.
-# Gebruik het daarna per groep met `template: firefly_spaarpotjes` (zie spaarpotjes-card.yaml).
+# Paste this block at the top of the raw dashboard configuration
+# (dashboard → ✏️ → ⋮ → Raw configuration editor), at the same level as `views:`.
+# Then use it once per group with `template: firefly_spaarpotjes` (see spaarpotjes-card.yaml).
 #
-# Variabelen:
-#   groep           (verplicht) groepsnaam precies zoals in Firefly III, incl. hoofdletters.
-#                   Spaarpotjes zonder groep vallen onder "Overig".
-#   toon_voortgang  true/false – voortgangsbalk per spaarpotje (standaard true).
-#   toon_kop        true/false – grijze regel "<groep> · N spaarpotjes" boven het totaal (standaard false).
-#   niet_in_totaal  lijst met spaarpotnamen die wel getoond, maar niet in het totaal/doel geteld worden.
+# Variables:
+#   groep           (required) group name exactly as in Firefly III, case-sensitive.
+#                   Piggy banks without a group count as "Overig".
+#   toon_voortgang  true/false – progress bar per piggy bank (default true).
+#   toon_kop        true/false – grey line "<group> · N spaarpotjes" above the total (default false).
+#   niet_in_totaal  list of piggy bank names that are shown but left out of the total and target.
 
 button_card_templates:
   firefly_spaarpotjes:

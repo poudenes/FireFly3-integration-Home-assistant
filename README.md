@@ -1,119 +1,172 @@
-# Firefly III voor Home Assistant
+# Firefly III for Home Assistant
 
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/)
 [![Release](https://img.shields.io/github/v/release/poudenes/FireFly3-integration-Home-assistant)](https://github.com/poudenes/FireFly3-integration-Home-assistant/releases)
 [![Validate](https://github.com/poudenes/FireFly3-integration-Home-assistant/actions/workflows/validate.yml/badge.svg)](https://github.com/poudenes/FireFly3-integration-Home-assistant/actions/workflows/validate.yml)
 
-Leest **alleen** rekeningen, spaarpotjes en abonnementen uit Firefly III. Transacties/betalingen worden niet opgehaald.
+A custom Home Assistant integration that brings your [Firefly III](https://www.firefly-iii.org/) **accounts**,
+**piggy banks** and **subscriptions (bills)** into Home Assistant as sensors, so you can build dashboards
+and automations around your personal finances.
 
-## Installatie
+- Read-only: the integration never changes anything in Firefly III, and it doesn't import individual transactions.
+- You choose exactly which accounts, piggy banks and subscriptions become sensors.
+- Subscriptions get a monthly status: paid, open, overdue or not due this month.
+- Comes with ready-made dashboard cards (see [Dashboard cards](#dashboard-cards)).
 
-**Via HACS (aanbevolen)**
+> **Note:** sensor names, entity IDs, attribute names and status values are in **Dutch**
+> (for example `sensor.rekening_<name>_saldo`). The setup screens are available in English and Dutch.
+> See [Sensors](#sensors) for a translation of every name.
 
-[![Open je Home Assistant en voeg deze repository toe aan HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=poudenes&repository=FireFly3-integration-Home-assistant&category=integration)
+## Requirements
+- Home Assistant 2024.12 or newer (the integration icon shows from 2026.3).
+- A Firefly III server reachable from Home Assistant, with API access.
+- A Firefly III **Personal Access Token**.
 
-1. HACS → ⋮ → *Custom repositories*.
-2. Repository: `https://github.com/poudenes/FireFly3-integration-Home-assistant`, type *Integration*.
-3. Zoek *Firefly III* in HACS, klik *Downloaden* en herstart Home Assistant.
+## Installation
 
-Nieuwe versies verschijnen daarna vanzelf als update in HACS (en onder *Instellingen → Updates*).
+### HACS (recommended)
 
-**Handmatig**
-1. Download `firefly3.zip` van de [laatste release](https://github.com/poudenes/FireFly3-integration-Home-assistant/releases/latest).
-2. Pak uit naar `/config/custom_components/firefly3` in Home Assistant.
-3. Herstart Home Assistant.
+[![Open your Home Assistant instance and add this repository to HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=poudenes&repository=FireFly3-integration-Home-assistant&category=integration)
 
-## Token maken in Firefly III
-Firefly III → **Opties → Profiel → OAuth → Personal Access Tokens → Nieuw token aanmaken**.
-Kopieer het token meteen; Firefly laat het maar één keer zien.
+1. In HACS, open ⋮ → **Custom repositories**.
+2. Add `https://github.com/poudenes/FireFly3-integration-Home-assistant` with type **Integration**.
+3. Search for **Firefly III** in HACS, click **Download** and restart Home Assistant.
 
-## Toevoegen
-**Instellingen → Apparaten & diensten → Integratie toevoegen → "Firefly III Overzicht"**
-1. Vul de URL in (bijv. `http://192.168.1.10:8080`) en het token.
-2. Na een geslaagde verbinding kies je welke rekeningen, spaarpotjes en abonnementen je wilt.
+New versions then show up as updates in HACS and under **Settings → Updates**.
 
-## Achteraf aanpassen
-- **Configureren**: selectie van rekeningen / spaarpotjes / abonnementen en het update-interval.
-  Niet meer geselecteerde items worden automatisch uit Home Assistant verwijderd.
-- URL of SSL-controle wijzigen: verwijder de integratie en voeg hem opnieuw toe.
-- Is het token verlopen, dan vraagt Home Assistant zelf om een nieuw token.
+### Manual
+1. Download `firefly3.zip` from the [latest release](https://github.com/poudenes/FireFly3-integration-Home-assistant/releases/latest).
+2. Extract it to `/config/custom_components/firefly3/` in Home Assistant.
+3. Restart Home Assistant.
 
-## Sensoren
-| Apparaat | Sensoren | Voorbeeld entity_id |
+## Configuration
+
+### 1. Create a token in Firefly III
+In Firefly III, go to **Options → Profile → OAuth → Personal Access Tokens → Create new token**.
+Copy the token right away: Firefly III shows it only once.
+
+### 2. Add the integration
+Go to **Settings → Devices & services → Add integration** and search for **Firefly III**.
+
+1. Enter the URL of your Firefly III server (for example `http://192.168.1.10:8080` or
+   `https://firefly.example.com`, without `/api`) and the token.
+   Turn off **Verify SSL certificate** if your server uses a self-signed certificate.
+2. Tick the accounts, piggy banks and subscriptions you want in Home Assistant.
+
+### Changing settings later
+- **Configure** on the integration: change the selection and the update interval (default 15 minutes).
+  Items you untick are removed from Home Assistant automatically.
+- When the token expires or is revoked, Home Assistant shows a repair notification asking for a new token.
+- To change the URL or the SSL setting, remove the integration and add it again.
+
+## Sensors
+Every selected item becomes a device with one or more sensors. Entity IDs follow the pattern
+`sensor.<device name>_<sensor name>`, for example `sensor.rekening_checking_saldo`.
+
+| Device | Sensor (English meaning) | Example entity ID |
 |---|---|---|
-| Firefly III | Totaal saldo | `sensor.firefly_iii_totaal_saldo` |
-| Rekening *naam* | Saldo (attributen: `iban`, `rol`, …) | `sensor.rekening_<naam>_saldo` |
-| Spaarpot *naam* | Gespaard (attributen: `doel`, `voortgang`, `groep`, …), Doel, Nog te sparen, Voortgang | `sensor.spaarpot_<naam>_gespaard` |
-| Abonnement *naam* | Status (`betaald`, `open`, `te_laat`, `niet_deze_maand`, `inactief`), Verwachte datum, Betaald op, Betaald bedrag, Verwacht bedrag | `sensor.abonnement_<naam>_status` |
+| Firefly III | Totaal saldo (total balance of active accounts that count towards net worth) | `sensor.firefly_iii_totaal_saldo` |
+| Rekening *name* (account) | Saldo (balance) | `sensor.rekening_<name>_saldo` |
+| Spaarpot *name* (piggy bank) | Gespaard (saved), Doel (target), Nog te sparen (left to save), Voortgang (progress %) | `sensor.spaarpot_<name>_gespaard` |
+| Abonnement *name* (subscription) | Status, Verwachte datum (expected date), Betaald op (paid on), Betaald bedrag (amount paid), Verwacht bedrag (expected amount) | `sensor.abonnement_<name>_status` |
 
-Domein: `firefly3` – bewust anders dan de ingebouwde `firefly_iii`-integratie van Home Assistant, zodat ze niet botsen.
+### Subscription status values
+| State | Meaning |
+|---|---|
+| `betaald` | Paid this month |
+| `open` | Due later this month, not paid yet |
+| `te_laat` | Expected date has passed this month, not paid yet (overdue) |
+| `niet_deze_maand` | Not due this month |
+| `inactief` | Subscription is inactive in Firefly III |
 
-## Dashboard-cards
-Kant-en-klare cards staan in de map [`examples/`](examples). De meeste gebruiken
-[custom:button-card](https://github.com/custom-cards/button-card) (installeren via HACS → *Frontend*).
-De cards zoeken de sensoren op basis van hun `entity_id`. Hernoem je een sensor, dan houdt de card er dus mee op;
-hernoemen van het *apparaat* mag wel (die naam wordt getoond).
+### Useful attributes
+| Sensor | Attributes |
+|---|---|
+| Saldo | `iban`, `rekeningnummer` (account number), `rol` (role), `actief` (active), `telt_mee_in_vermogen` (included in net worth), `saldo_datum` (balance date) |
+| Gespaard | `doel` (target), `voortgang` (progress %), `groep` (Firefly III group), `rekeningen` (linked accounts), `startdatum`, `doeldatum` (target date), `actief` |
+| Status | `verwachte_datum`, `volgende_verwachte_datum` (next expected date), `betaald_op`, `betaald_bedrag`, `bedrag_min`, `bedrag_max`, `frequentie` (repeat frequency), `groep`, `aantal_betalingen_deze_maand` (payments this month) |
 
-### 1. Rekeningen – [`rekeningen-card.yaml`](examples/rekeningen-card.yaml)
-- **Toont:** het totaalsaldo bovenaan (rood als het negatief is), daaronder elke rekening met een
-  rondje met de beginletter, de naam, de laatste 4 cijfers van de IBAN en het saldo.
-  Een balkje laat zien welk deel van het (positieve) totaal op die rekening staat.
-- **Leest:** alle `sensor.rekening_*_saldo` van deze integratie, plus het attribuut `iban`.
-- **Sortering:** hoogste saldo bovenaan. Negatieve saldi zijn rood en hebben geen balkje.
-- **Instellen:** niets; nieuwe rekeningen verschijnen vanzelf.
+The domain is `firefly3`, deliberately different from Home Assistant's built-in `firefly_iii`
+integration, so both can be installed side by side.
 
-### 2. Spaarpotjes per groep – [`spaarpotjes-template.yaml`](examples/spaarpotjes-template.yaml) + [`spaarpotjes-card.yaml`](examples/spaarpotjes-card.yaml)
-Eén card die je per Firefly III-groep hergebruikt (bijv. *Vaste lasten*, *Jaarlijkse kosten 2026*, *Sparen inboedel*).
-Omdat alleen de groep verschilt, staat de code één keer in een sjabloon.
+## Dashboard cards
+Ready-made cards are in the [`examples/`](examples) folder. Most of them need
+[button-card](https://github.com/custom-cards/button-card) (install it via HACS → **Frontend**).
+The text the cards show is in Dutch and amounts are formatted as euros; both are easy to change in the card code.
 
-- **Toont:** het totaal gespaard, "van €… · …%" met een voortgangsbalk naar het totale doel, en per spaarpotje
-  het bedrag / doel met een eigen balk. Op of boven 100% wordt de balk groen; zonder doel staat er
-  "geen doel ingesteld".
-- **Leest:** `sensor.spaarpot_*_gespaard` met de attributen `groep`, `doel` en `voortgang`.
-- **Sortering:** hoogste voortgang bovenaan; spaarpotjes zonder doel onderaan.
-- **Installeren:**
-  1. Open het dashboard → ✏️ → ⋮ → *Ruwe configuratie-editor*.
-  2. Plak het blok `button_card_templates:` uit `spaarpotjes-template.yaml` helemaal bovenaan, op hetzelfde niveau als `views:`.
-  3. Voeg per groep een card toe zoals in `spaarpotjes-card.yaml`.
-- **Variabelen:**
+The cards find sensors by their entity ID, so don't rename the sensors. Renaming the *devices* is fine:
+the cards show the device name.
 
-  | Variabele | Standaard | Betekenis |
+### 1. Accounts – [`rekeningen-card.yaml`](examples/rekeningen-card.yaml)
+- **Shows:** the total balance (red when negative), then every account with its initial, name,
+  the last 4 digits of the IBAN and its balance. A bar shows each account's share of the positive total.
+- **Reads:** all `sensor.rekening_*_saldo` sensors of this integration and their `iban` attribute.
+- **Sorting:** highest balance first. Negative balances are red and have no bar.
+- **Setup:** none. New accounts appear automatically.
+
+### 2. Piggy banks per group – [`spaarpotjes-template.yaml`](examples/spaarpotjes-template.yaml) + [`spaarpotjes-card.yaml`](examples/spaarpotjes-card.yaml)
+One card you reuse for each piggy bank group in Firefly III. The code lives in a single button-card
+template, and each card only sets the group.
+
+- **Shows:** the total saved, "van €… · …%" (of target) with a progress bar towards the combined target, and per
+  piggy bank the amount / target with its own bar. Bars turn green at 100%. Piggy banks without a target
+  show "geen doel ingesteld" (no target set).
+- **Reads:** `sensor.spaarpot_*_gespaard` and the attributes `groep`, `doel` and `voortgang`.
+- **Sorting:** highest progress first; piggy banks without a target last.
+- **Install:**
+  1. Open your dashboard → ✏️ → ⋮ → **Raw configuration editor**.
+  2. Paste the `button_card_templates:` block from `spaarpotjes-template.yaml` at the very top, at the same level as `views:`.
+  3. Add one card per group, as in `spaarpotjes-card.yaml`.
+- **Variables:**
+
+  | Variable | Default | Meaning |
   |---|---|---|
-  | `groep` | `Overig` | Groepsnaam precies zoals in Firefly III (hoofdlettergevoelig). Spaarpotjes zonder groep vallen onder `Overig`. |
-  | `toon_voortgang` | `true` | Voortgangsbalk per spaarpotje tonen. |
-  | `toon_kop` | `false` | Grijze regel "*groep* · N spaarpotjes" boven het totaal. |
-  | `niet_in_totaal` | `[]` | Spaarpotjes (naam zonder "Spaarpot ") die wel getoond worden maar niet meetellen in totaal en doel, bijv. `Boodschappen`. |
+  | `groep` | `Overig` | Group name exactly as in Firefly III (case-sensitive). Piggy banks without a group count as `Overig`. |
+  | `toon_voortgang` | `true` | Show a progress bar per piggy bank. |
+  | `toon_kop` | `false` | Show a grey line "*group* · N spaarpotjes" above the total. |
+  | `niet_in_totaal` | `[]` | Piggy bank names (without the "Spaarpot " prefix) that are listed but left out of the total and target. |
 
-- **Zie je "Geen spaarpotjes gevonden in groep …"?** Dan klopt de groepsnaam niet precies, of die spaarpotjes
-  zijn niet aangevinkt bij *Configureren* van de integratie.
+- **Seeing "Geen spaarpotjes gevonden in groep …" (no piggy banks found)?** The group name doesn't match
+  exactly, or those piggy banks aren't selected under **Configure**.
 
-### 3. Maandelijkse uitgaven – [`abonnementen-card.yaml`](examples/abonnementen-card.yaml)
-- **Toont:** bovenaan het bedrag dat deze maand nog betaald moet worden, "€… betaald van €…" met een groene balk,
-  en een rode badge als er iets te laat is. Daaronder twee lijsten:
-  - **Deze maand:** abonnementen met status *Betaald*, *Open* of *Te laat*, met een datumblokje
-    (betaaldatum als het betaald is, anders de verwachte datum), naam, bedrag en een gekleurd label.
-  - **Later:** abonnementen die deze maand niet aan de beurt zijn (gedimd).
-- **Leest:** `sensor.abonnement_*_status` (`betaald`, `open`, `te_laat`, `niet_deze_maand`) en de attributen
-  `bedrag_min`, `bedrag_max`, `betaald_bedrag`, `betaald_op` en `verwachte_datum`.
-  Inactieve abonnementen worden overgeslagen.
-- **Bedragen:** bij *Betaald* het echt betaalde bedrag; anders het gemiddelde van min en max.
-- **Kleuren aanpassen:** in het blok `stat` bovenin de code (nu: betaald groen, open rood, te laat blauw).
+### 3. Monthly subscriptions – [`abonnementen-card.yaml`](examples/abonnementen-card.yaml)
+- **Shows:** the amount still to pay this month, "€… betaald van €…" (paid of total) with a progress bar,
+  and a red badge when something is overdue. Below that, two lists:
+  - **Deze maand** (this month): subscriptions that are paid, open or overdue, with a date tile
+    (payment date when paid, otherwise the expected date), name, amount and a coloured label.
+  - **Later**: subscriptions not due this month (dimmed).
+- **Reads:** `sensor.abonnement_*_status` and the attributes `bedrag_min`, `bedrag_max`,
+  `betaald_bedrag`, `betaald_op` and `verwachte_datum`. Inactive subscriptions are skipped.
+- **Amounts:** the actual amount paid when paid; otherwise the average of the minimum and maximum amount.
+- **Colours:** change them in the `stat` block at the top of the code.
 
-### 4. Rekeningen als tabel – [`rekeningen-markdown-card.yaml`](examples/rekeningen-markdown-card.yaml)
-- **Toont:** een eenvoudige tabel *Rekening | Saldo* met een totaalregel; negatieve saldi in rood.
-- **Leest:** dezelfde `sensor.rekening_*_saldo` als card 1, via `integration_entities('firefly3')`.
-- **Verschil met card 1:** standaard Markdown-card, dus geen button-card nodig. Handig voor een paneelweergave of
-  als button-card (nog) niet geïnstalleerd is.
+### 4. Accounts as a table – [`rekeningen-markdown-card.yaml`](examples/rekeningen-markdown-card.yaml)
+- **Shows:** a simple *Account | Balance* table with a total row; negative balances in red.
+- **Reads:** the same `sensor.rekening_*_saldo` sensors as card 1, via `integration_entities('firefly3')`.
+- **Why use it:** it's a standard Markdown card, so it doesn't need button-card.
 
+## Troubleshooting
+- **Cannot connect:** check that Home Assistant can reach the URL, and turn off SSL verification for self-signed certificates.
+- **Invalid token:** create a new Personal Access Token in Firefly III.
+- **Debug logging:** add this to `configuration.yaml` and restart:
+  ```yaml
+  logger:
+    logs:
+      custom_components.firefly3: debug
+  ```
+- Found a bug? [Open an issue](https://github.com/poudenes/FireFly3-integration-Home-assistant/issues)
+  and include your versions and the log lines for `firefly3`.
 
-## Nieuwe versie uitbrengen
-Versienummering volgt [SemVer](https://semver.org/lang/nl/) (`MAJOR.MINOR.PATCH`).
-1. Verhoog `version` in `custom_components/firefly3/manifest.json` (bijv. `1.0.0` → `1.0.1`).
-2. Vul `CHANGELOG.md` aan.
-3. Commit en push naar `main`.
+## Releasing (maintainers)
+Versions follow [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`).
+1. Bump `version` in `custom_components/firefly3/manifest.json`.
+2. Add an entry to `CHANGELOG.md`.
+3. Commit and push to `main`.
 
-De *Release*-workflow maakt dan automatisch tag `v1.0.1` en een GitHub-release met `firefly3.zip`;
-HACS biedt die versie vervolgens aan als update. Een versie als `1.1.0b1` wordt als pre-release gepubliceerd.
+The **Release** workflow then creates the tag `vX.Y.Z` and a GitHub release with `firefly3.zip`,
+which HACS offers as an update. Versions such as `1.2.0b1` are published as pre-releases.
 
-## Licentie
-MIT – zie [LICENSE](LICENSE).
+## License
+MIT – see [LICENSE](LICENSE).
+
+Firefly III is a project by James Cole; this integration is not affiliated with it.

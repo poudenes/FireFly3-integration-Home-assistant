@@ -1,31 +1,33 @@
 # Changelog
 
-Alle noemenswaardige wijzigingen worden hier bijgehouden.
-Versienummering volgt [Semantic Versioning](https://semver.org/lang/nl/): `MAJOR.MINOR.PATCH`.
+All notable changes to this project are documented here.
+Versions follow [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`.
 
 ## [1.1.0] - 2026-11-08
-### Gewijzigd
-- De integratiecode is teruggezet naar de versie die eerder in gebruik was (0.2.2, "Firefly III Overzicht").
-  Versies 1.0.0 t/m 1.0.3 bevatten per ongeluk een andere opzet met andere sensoren, waardoor dashboards niet meer klopten.
-  De sensoren heten weer o.a. `sensor.rekening_<naam>_saldo`, `sensor.spaarpot_<naam>_gespaard` en `sensor.abonnement_<naam>_status`.
-- Token dat door 1.0.x als `access_token` is opgeslagen wordt automatisch omgezet; ontbreekt het, dan vraagt Home Assistant om een nieuw token.
-- Origineel icoon terug.
+### Changed
+- Restored the integration code that was in use before the HACS releases (0.2.2, "Firefly III Overzicht").
+  Versions 1.0.0 to 1.0.3 accidentally shipped a different implementation with other sensor names,
+  which broke existing dashboards. Sensors are again named `sensor.rekening_<name>_saldo`,
+  `sensor.spaarpot_<name>_gespaard`, `sensor.abonnement_<name>_status` and so on.
+- A token stored as `access_token` by 1.0.x is migrated automatically; if no token is stored,
+  Home Assistant asks for a new one.
+- Restored the original icon.
 
 ## [1.0.3] - 2026-11-08
-### Toegevoegd
-- Eigen icoon in `custom_components/firefly3/brand/` (Firefly III-logo); zichtbaar vanaf Home Assistant 2026.3.
+### Added
+- Integration icon in `custom_components/firefly3/brand/` (Firefly III logo), shown from Home Assistant 2026.3.
 
 ## [1.0.2] - 2026-11-08
-### Opgelost
-- `KeyError: 'access_token'` bij het opstarten van een bestaande installatie zonder (of met een anders genoemd) token.
-  Een token onder een oude sleutel wordt automatisch overgezet; ontbreekt het, dan vraagt Home Assistant om een nieuw token.
-- *Configureren* en *Opnieuw configureren* gaven een 500-fout als er geen token was opgeslagen.
+### Fixed
+- `KeyError: 'access_token'` on startup for existing installations without a token, or with the token stored under another key.
+  A token under an old key is migrated automatically; if it is missing, Home Assistant asks for a new token.
+- **Configure** and **Reconfigure** returned a 500 error when no token was stored.
 
 ## [1.0.1] - 2026-11-08
-### Gewijzigd
-- Voorbeeld-URL's in het configuratiescherm via placeholders (voldoet aan hassfest).
+### Changed
+- Example URLs in the setup screen now use description placeholders (required by hassfest).
 
 ## [1.0.0] - 2026-11-08
-### Toegevoegd
-- Eerste release: rekeningen, spaarpotjes en abonnementen uit Firefly III als sensoren.
-- Installatie en updates via HACS.
+### Added
+- First release: Firefly III accounts, piggy banks and subscriptions as sensors.
+- Installation and updates via HACS.

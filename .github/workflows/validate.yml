@@ -19,7 +19,7 @@ jobs:
       - uses: hacs/action@main
         with:
           category: integration
-          # Het icoon staat (nog) niet in home-assistant/brands.
+          # The icon ships with the integration (brand/), not in home-assistant/brands.
           ignore: brands
 
   hassfest:

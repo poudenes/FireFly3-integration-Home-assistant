@@ -1,8 +1,8 @@
 name: Release
 
-# Verhoog "version" in custom_components/firefly3/manifest.json en push naar main.
-# Deze workflow maakt dan automatisch tag vX.Y.Z + GitHub-release met firefly3.zip,
-# waarna HACS de update aanbiedt.
+# Bump "version" in custom_components/firefly3/manifest.json and push to main.
+# This workflow then creates tag vX.Y.Z and a GitHub release with firefly3.zip,
+# which HACS offers as an update.
 
 on:
   push:
@@ -22,12 +22,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Versie uit manifest lezen
+      - name: Read version from manifest
         id: version
         run: |
           VERSION=$(jq -r .version custom_components/firefly3/manifest.json)
           if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-]?[A-Za-z0-9.]+)?$ ]]; then
-            echo "::error::Ongeldige versie in manifest.json: $VERSION"
+            echo "::error::Invalid version in manifest.json: $VERSION"
             exit 1
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
@@ -38,13 +38,13 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Zip bouwen
+      - name: Build zip
         if: steps.version.outputs.exists == 'false'
         run: |
           cd custom_components/firefly3
           zip -r "$GITHUB_WORKSPACE/firefly3.zip" . -x "__pycache__/*" "*.pyc" ".DS_Store"
 
-      - name: Release aanmaken
+      - name: Create release
         if: steps.version.outputs.exists == 'false'
         env:
           GH_TOKEN: ${{ github.token }}

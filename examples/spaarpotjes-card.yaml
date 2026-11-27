@@ -1,5 +1,5 @@
-# Spaarpotjes van één groep, met het sjabloon uit spaarpotjes-template.yaml.
-# Kopieer dit blok per groep en pas alleen de variabelen aan.
+# Piggy banks of one group, using the template from spaarpotjes-template.yaml.
+# Copy this block for each group and change only the variables.
 
 type: vertical-stack
 title: Sparen vaste lasten
@@ -11,7 +11,7 @@ cards:
       niet_in_totaal:
         - Boodschappen
 
-# Meer voorbeelden (elk als eigen card):
+# More examples (each one a separate card):
 #
 # - type: vertical-stack
 #   title: Totaal apart houden salaris
